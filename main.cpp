@@ -475,15 +475,15 @@ void menu() {
                 cout << "Masukkan nama pengarang: ";
                 getline(cin, author);
 
-                // Baca data dari file bst_books.txt
-                ifstream file("bst_books.txt");
-                if (!file) {
-                    cerr << "Gagal membuka file bst_books.txt\n";
+                // Baca data dari file books.txt
+                ifstream booksFile("books.txt");
+                if (!booksFile) {
+                    cerr << "Gagal membuka file books.txt\n";
                     break;
                 }
 
                 string line;
-                while (getline(file, line)) {
+                while (getline(booksFile, line)) {
                     stringstream ss(line);
                     string title, fileAuthor, isbn;
                     getline(ss, title, ',');
@@ -494,7 +494,27 @@ void menu() {
                         g.addBook(title, fileAuthor, isbn);
                     }
                 }
-                file.close();
+                booksFile.close();
+
+                // Baca data dari file bst_books.txt
+                ifstream bstBooksFile("bst_books.txt");
+                if (!bstBooksFile) {
+                    cerr << "Gagal membuka file bst_books.txt\n";
+                    break;
+                }
+
+                while (getline(bstBooksFile, line)) {
+                    stringstream ss(line);
+                    string title, fileAuthor, isbn;
+                    getline(ss, title, ',');
+                    getline(ss, fileAuthor, ',');
+                    getline(ss, isbn, ',');
+
+                    if (fileAuthor == author) {
+                        g.addBook(title, fileAuthor, isbn);
+                    }
+                }
+                bstBooksFile.close();
 
                 g.displayConnectedBooksByAuthor(author);
                 break;
