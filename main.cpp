@@ -5,7 +5,8 @@
 #include <unordered_map>
 #include <vector>
 #include <list>
-#include <fstream> // Tambahkan header untuk file handling
+#include <fstream>
+#include <sstream> // Tambahkan header untuk stringstream
 using namespace std;
 
 // Struktur data untuk Linked List
@@ -75,6 +76,17 @@ public:
             addBook(title, author, isbn);
         }
         file.close();
+    }
+
+    BookNode* searchByISBN(string isbn) {
+        BookNode* temp = head;
+        while (temp != nullptr) {
+            if (temp->isbn == isbn) {
+                return temp;
+            }
+            temp = temp->next;
+        }
+        return nullptr;
     }
 };
 
@@ -148,6 +160,7 @@ public:
 
     void insert(string title, string author, string isbn) {
         root = insertRec(root, title, author, isbn);
+        saveToFile(); // Simpan ke file setiap kali buku ditambahkan
     }
 
     BSTNode* insertRec(BSTNode* node, string title, string author, string isbn) {
@@ -181,6 +194,7 @@ public:
 
     void deleteNode(string isbn) {
         root = deleteRec(root, isbn);
+        saveToFile(); // Simpan ke file setiap kali buku dihapus
     }
 
     BSTNode* deleteRec(BSTNode* root, string isbn) {
@@ -209,6 +223,28 @@ public:
         while (current && current->left != nullptr) current = current->left;
         return current;
     }
+
+    void saveToFile() {
+        ofstream file("bst_books.txt");
+        saveRec(file, root);
+        file.close();
+    }
+
+    void saveRec(ofstream& file, BSTNode* node) {
+        if (node == nullptr) return;
+        file << node->title << "," << node->author << "," << node->isbn << endl;
+        saveRec(file, node->left);
+        saveRec(file, node->right);
+    }
+
+    void loadFromFile() {
+        ifstream file("bst_books.txt");
+        string title, author, isbn;
+        while (getline(file, title, ',') && getline(file, author, ',') && getline(file, isbn)) {
+            insert(title, author, isbn);
+        }
+        file.close();
+    }
 };
 
 // Struktur data untuk Graph
@@ -221,17 +257,17 @@ public:
         adjList[book2].push_back(book1);
     }
 
-    void displayConnectedBooks(string book) {
-        if (adjList.find(book) != adjList.end()) {
-            cout << "Buku yang terhubung dengan " << book << ":\n";
-            cout << "----------------------------------------\n";
-            for (const auto& b : adjList[book]) {
-                cout << b << "\n";
-            }
-            cout << "----------------------------------------\n";
-        } else {
-            cout << "Tidak ada buku yang terhubung dengan " << book << "\n";
+    void addBook(string title, string author, string isbn) {
+        adjList[author].push_back(title);
+    }
+
+    void displayConnectedBooksByAuthor(string author) {
+        cout << "Buku yang terhubung dengan pengarang " << author << ":\n";
+        cout << "----------------------------------------\n";
+        for (const auto& book : adjList[author]) {
+            cout << book << "\n";
         }
+        cout << "----------------------------------------\n";
         cout << "Tekan enter untuk melanjutkan...";
         cin.ignore();
     }
@@ -295,7 +331,8 @@ void menu() {
     Graph g;
     int choice;
     ll.loadFromFile(); // Muat data dari file saat program dimulai
-    do {
+    bst.loadFromFile(); // Muat data dari file saat program dimulai
+    do {    
         system("cls");
         cout << "\n========================================\n";
         cout << "Menu Manajemen Data Buku Perpustakaan\n";
@@ -404,14 +441,17 @@ void menu() {
                     cin >> subChoice;
                     cin.ignore(); // Tambahkan ini untuk mengabaikan karakter newline setelah input angka
                     if (subChoice == 1) {
-                        string title, author, isbn;
-                        cout << "Masukkan judul: ";
-                        getline(cin, title);
-                        cout << "Masukkan pengarang: ";
-                        getline(cin, author);
+                        string isbn;
                         cout << "Masukkan ISBN: ";
                         getline(cin, isbn);
-                        bst.insert(title, author, isbn);
+                        BookNode* book = ll.searchByISBN(isbn);
+                        if (book != nullptr) {
+                            bst.insert(book->title, book->author, book->isbn);
+                        } else {
+                            cout << "Buku dengan ISBN tersebut tidak ditemukan di LinkedList\n";
+                            cout << "Tekan enter untuk melanjutkan...";
+                            cin.ignore();
+                        }
                     } else if (subChoice == 2) {
                         string isbn;
                         cout << "Masukkan ISBN: ";
@@ -427,33 +467,36 @@ void menu() {
                 break;
             }
             case 4: {
-                int subChoice;
-                do {
-                    system("cls");
-                    cout << "\n========================================\n";
-                    cout << "Manajemen Hubungan Buku (Graph)\n";
-                    cout << "========================================\n";
-                    cout << "1. Tambah Hubungan Buku\n";
-                    cout << "2. Tampilkan Buku Terhubungan\n";
-                    cout << "3. Kembali ke menu\n";
-                    cout << "========================================\n";
-                    cout << "Pilih opsi: ";
-                    cin >> subChoice;
-                    cin.ignore(); // Tambahkan ini untuk mengabaikan karakter newline setelah input angka
-                    if (subChoice == 1) {
-                        string book1, book2;
-                        cout << "Masukkan judul buku pertama: ";
-                        getline(cin, book1);
-                        cout << "Masukkan judul buku kedua: ";
-                        getline(cin, book2);
-                        g.addEdge(book1, book2);
-                    } else if (subChoice == 2) {
-                        string book;
-                        cout << "Masukkan judul buku: ";
-                        getline(cin, book);
-                        g.displayConnectedBooks(book);
+                system("cls");
+                cout << "\n========================================\n";
+                cout << "Manajemen Hubungan Buku (Graph)\n";
+                cout << "========================================\n";
+                string author;
+                cout << "Masukkan nama pengarang: ";
+                getline(cin, author);
+
+                // Baca data dari file bst_books.txt
+                ifstream file("bst_books.txt");
+                if (!file) {
+                    cerr << "Gagal membuka file bst_books.txt\n";
+                    break;
+                }
+
+                string line;
+                while (getline(file, line)) {
+                    stringstream ss(line);
+                    string title, fileAuthor, isbn;
+                    getline(ss, title, ',');
+                    getline(ss, fileAuthor, ',');
+                    getline(ss, isbn, ',');
+
+                    if (fileAuthor == author) {
+                        g.addBook(title, fileAuthor, isbn);
                     }
-                } while (subChoice != 3);
+                }
+                file.close();
+
+                g.displayConnectedBooksByAuthor(author);
                 break;
             }
             case 5: {
