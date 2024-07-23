@@ -324,16 +324,18 @@ void menu() {
                     if (subChoice == 1) {
                         string title, author, isbn;
                         cout << "Masukkan judul: ";
-                        cin >> title;
+                        cin.ignore();
+                        getline(cin, title);
                         cout << "Masukkan pengarang: ";
-                        cin >> author;
+                        getline(cin, author);
                         cout << "Masukkan ISBN: ";
-                        cin >> isbn;
+                        getline(cin, isbn);
                         ll.addBook(title, author, isbn);
                     } else if (subChoice == 2) {
                         string title;
                         cout << "Masukkan judul: ";
-                        cin >> title;
+                        cin.ignore();
+                        getline(cin, title);
                         ll.deleteBook(title);
                     } else if (subChoice == 3) {
                         ll.displayBooks();
@@ -358,16 +360,18 @@ void menu() {
                         cout << "Masukkan nomor anggota: ";
                         cin >> memberId;
                         cout << "Masukkan judul buku: ";
-                        cin >> bookTitle;
+                        cin.ignore();
+                        getline(cin, bookTitle);
                         q.enqueue(memberId, bookTitle);
                     } else if (subChoice == 2) {
                         q.dequeue();
                     } else if (subChoice == 3) {
                         string title, author;
                         cout << "Masukkan judul: ";
-                        cin >> title;
+                        cin.ignore();
+                        getline(cin, title);
                         cout << "Masukkan pengarang: ";
-                        cin >> author;
+                        getline(cin, author);
                         s.push(title, author);
                     } else if (subChoice == 4) {
                         s.top();
@@ -387,14 +391,16 @@ void menu() {
                     if (subChoice == 1) {
                         string book1, book2;
                         cout << "Masukkan judul buku pertama: ";
-                        cin >> book1;
+                        cin.ignore();
+                        getline(cin, book1);
                         cout << "Masukkan judul buku kedua: ";
-                        cin >> book2;
+                        getline(cin, book2);
                         g.addEdge(book1, book2);
                     } else if (subChoice == 2) {
                         string book;
                         cout << "Masukkan judul buku: ";
-                        cin >> book;
+                        cin.ignore();
+                        getline(cin, book);
                         g.displayConnectedBooks(book);
                     }
                 } while (subChoice != 3);
@@ -412,16 +418,18 @@ void menu() {
                     if (subChoice == 1) {
                         string start, end;
                         cout << "Masukkan judul buku awal: ";
-                        cin >> start;
+                        cin.ignore();
+                        getline(cin, start);
                         cout << "Masukkan judul buku akhir: ";
-                        cin >> end;
+                        getline(cin, end);
                         BFS(g, start, end);
                     } else if (subChoice == 2) {
                         string start, end;
                         cout << "Masukkan judul buku awal: ";
-                        cin >> start;
+                        cin.ignore();
+                        getline(cin, start);
                         cout << "Masukkan judul buku akhir: ";
-                        cin >> end;
+                        getline(cin, end);
                         DFS(g, start, end);
                     }
                 } while (subChoice != 3);
